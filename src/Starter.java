@@ -29,17 +29,16 @@ public class Starter {
         output.setLength(0);
         /* ---------------------------------------------------------------------------------------------------------- */
 
-        String webPage = Jsoup.connect(web_url).get().outerHtml();
+        // 10000000 is working for this page
+        Document doc = Jsoup.connect(web_url).maxBodySize(10000000).get();
+        Element table = doc.select("table").get(0);
+        Elements rows = table.select("tr");
 
         /* ---------------------------------------------------------------------------------------------------------- */
         output.append("[] Done!");
         System.out.println(output.insert(1, new Exception().getStackTrace()[0].getLineNumber()));
         output.setLength(0);
         /* ---------------------------------------------------------------------------------------------------------- */
-
-        Document doc = Jsoup.parse(webPage);
-        Element table = doc.select("table").get(0);
-        Elements rows = table.select("tr");
 
         Element row;
         Elements cols;
@@ -51,7 +50,7 @@ public class Starter {
         /* ---------------------------------------------------------------------------------------------------------- */
 
         // populate arraylist with all td per row
-        for (int i = 1; i < 445; i++) {
+        for (int i = 1; i < rows.size(); i++) {
             row = rows.get(i);
             cols = row.select("td");
             rows_arraylist.add(cols.eachText());
@@ -105,7 +104,6 @@ public class Starter {
             PreparedStatement preparedStmt = con.prepareStatement(query);
 
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
             String currentTime = sdf.format(new java.util.Date());
 
             /* ------------------------------------------------------------------------------------------------------ */
@@ -114,19 +112,26 @@ public class Starter {
             output.setLength(0);
             /* ------------------------------------------------------------------------------------------------------ */
 
+            int err_cnt = 0;
             for (int i = 0; i < rows_arraylist.size(); i++) {
-                preparedStmt.setString(1, currentTime);
-                preparedStmt.setString(2, rows_arraylist.get(i).get(1));
-                preparedStmt.setInt(3, Integer.parseInt(rows_arraylist.get(i).get(0)));
-                preparedStmt.setLong(4, Long.parseLong(rows_arraylist.get(i).get(2)));
-                preparedStmt.setFloat(5, Float.parseFloat(rows_arraylist.get(i).get(3)));
-                preparedStmt.setLong(6, Long.parseLong(rows_arraylist.get(i).get(4)));
 
-                preparedStmt.execute();
+                // handle error if entries are not in expected format
+                try {
+                    preparedStmt.setString(1, currentTime);
+                    preparedStmt.setString(2, rows_arraylist.get(i).get(1));
+                    preparedStmt.setInt(3, Integer.parseInt(rows_arraylist.get(i).get(0)));
+                    preparedStmt.setLong(4, Long.parseLong(rows_arraylist.get(i).get(2)));
+                    preparedStmt.setFloat(5, Float.parseFloat(rows_arraylist.get(i).get(3)));
+                    preparedStmt.setLong(6, Long.parseLong(rows_arraylist.get(i).get(4)));
+
+                    preparedStmt.execute();
+                } catch (NumberFormatException ex) {
+                    err_cnt++;
+                }
             }
 
             /* ------------------------------------------------------------------------------------------------------ */
-            output.append("[] Done!\n");
+            output.append("[] Done! ").append(err_cnt).append(" entries were incomplete and ignored.");
             System.out.println(output.insert(1, new Exception().getStackTrace()[0].getLineNumber()));
             output.setLength(0);
             /* ------------------------------------------------------------------------------------------------------ */
