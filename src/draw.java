@@ -39,41 +39,35 @@ public class draw extends Application {
             output.setLength(0);
             /* ------------------------------------------------------------------------------------------------------ */
 
-            // the mysql insert statement
-
-            ArrayList<String> datum_list = new ArrayList<>();
-            ArrayList<String> name_list = new ArrayList<>();
-            ArrayList<Integer> position_list = new ArrayList<>();
-            ArrayList<Long> cap_list = new ArrayList<>();
-            ArrayList<Float> price_list = new ArrayList<>();
-            ArrayList<Long> volume_list = new ArrayList<>();
-
+            ArrayList<ArrayList<Object>> data = new ArrayList<>();
 
             try (Statement stmt = con.createStatement()) {
                 String query = "SELECT `datum`, `name`, `position`, `cap`, `price`, `volume` FROM `coins`;";
 
-                /* ------------------------------------------------------------------------------------------------------ */
+                /* -------------------------------------------------------------------------------------------------- */
                 output.append("[] Excecute SQL statement...");
                 System.out.println(output.insert(1, new Exception().getStackTrace()[0].getLineNumber()));
                 output.setLength(0);
-                /* ------------------------------------------------------------------------------------------------------ */
+                /* -------------------------------------------------------------------------------------------------- */
 
                 ResultSet rs = stmt.executeQuery(query);
+                ArrayList<Object> tmp = new ArrayList<>();
 
                 while (rs.next()) {
-                    datum_list.add(rs.getString(1));
-                    name_list.add(rs.getString(2));
-                    position_list.add(rs.getInt(3));
-                    cap_list.add(rs.getLong(4));
-                    price_list.add(rs.getFloat(5));
-                    volume_list.add(rs.getLong(6));
+                    tmp.add(rs.getString(1));
+                    tmp.add(rs.getString(2));
+                    tmp.add(rs.getInt(3));
+                    tmp.add(rs.getLong(4));
+                    tmp.add(rs.getFloat(5));
+                    tmp.add(rs.getLong(6));
+                    data.add(tmp);
                 }
 
-                /* ------------------------------------------------------------------------------------------------------ */
-                output.append("[] Done! ").append(datum_list.size()).append(" entries were found.");
+                /* -------------------------------------------------------------------------------------------------- */
+                output.append("[] Done! ").append(data.size()).append(" entries were found.");
                 System.out.println(output.insert(1, new Exception().getStackTrace()[0].getLineNumber()));
                 output.setLength(0);
-                /* ------------------------------------------------------------------------------------------------------ */
+                /* -------------------------------------------------------------------------------------------------- */
 
 
                 stage.setTitle("Line Chart Sample");
