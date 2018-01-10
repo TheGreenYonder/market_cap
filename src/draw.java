@@ -8,6 +8,8 @@ import javafx.stage.Stage;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 
 
 public class draw extends Application {
@@ -39,8 +41,6 @@ public class draw extends Application {
             output.setLength(0);
             /* ------------------------------------------------------------------------------------------------------ */
 
-            ArrayList<ArrayList<Object>> data = new ArrayList<>();
-
             try (Statement stmt = con.createStatement()) {
                 String query = "SELECT `datum`, `name`, `position`, `cap`, `price`, `volume` FROM `coins`;";
 
@@ -51,16 +51,25 @@ public class draw extends Application {
                 /* -------------------------------------------------------------------------------------------------- */
 
                 ResultSet rs = stmt.executeQuery(query);
+
+                //for storing all entries
+                ArrayList<ArrayList<Object>> data = new ArrayList<>();
+
+                //for storing names uniquely
+                Set<String> names = new TreeSet<>();
+
+                //tmp for adding rows as arraylist to data
                 ArrayList<Object> tmp = new ArrayList<>();
 
                 while (rs.next()) {
-                    tmp.add(rs.getString(1));
-                    tmp.add(rs.getString(2));
-                    tmp.add(rs.getInt(3));
-                    tmp.add(rs.getLong(4));
-                    tmp.add(rs.getFloat(5));
-                    tmp.add(rs.getLong(6));
+                    tmp.add(rs.getString(1));   //date
+                    tmp.add(rs.getString(2));   //name
+                    tmp.add(rs.getInt(3));      //position
+                    tmp.add(rs.getLong(4));     //cap
+                    tmp.add(rs.getFloat(5));    //prize
+                    tmp.add(rs.getLong(6));     //volume
                     data.add(tmp);
+                    names.add(rs.getString(2));
                 }
 
                 /* -------------------------------------------------------------------------------------------------- */
