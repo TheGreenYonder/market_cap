@@ -4,7 +4,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Locale;
 
 
 public class Starter {
@@ -22,7 +25,7 @@ public class Starter {
         /* ---------------------------------------------------------------------------------------------------------- */
 
         // 10000000 is working for this page
-        Document doc = null;
+        Document doc;
         try {
             doc = Jsoup.connect(landing_page).maxBodySize(10000000).get();
 
@@ -44,7 +47,7 @@ public class Starter {
             ArrayList<Coin> coins = new ArrayList<>();
 
             //for range of histoical data
-            String historical_frame = "historical-data/?start=20171210&end=20180110";
+            String historical_frame = "historical-data/?start=20170110&end=20180110";
 
             /* ---------------------------------------------------------------------------------------------------------- */
             output.append("[] Done!");
@@ -60,20 +63,32 @@ public class Starter {
                 coins.add(new Coin(link.attr("abs:href") + historical_frame, link.text()));
             }
 
-            coins = new ArrayList<>(coins.subList(0, 20));
+            coins = new ArrayList<>(coins.subList(0, 500));
             //removes object if less than 30 entries (days)
-            coins.removeIf(coin -> coin.fetch_market_caps() < 30);
-
+            coins.removeIf(coin -> coin.fetch_market_caps() < 50);
 
             ArrayList<Long> market_cap_change = new ArrayList<>();
             for (Coin coin : coins) {
-                coin.calculate_minmax();
-                market_cap_change.add(coin.getMax() - coin.getMin());
+                coin.oldest_latest();
+                coin.market_cap_change();
+                market_cap_change.add(coin.getCap_change());
             }
 
-            //market_cap_change.sort(Collections.reverseOrder());
+            for (Coin coin : coins) {
+                coin.market_cap_change();
+            }
 
-            System.out.println(market_cap_change);
+            market_cap_change.sort(Collections.reverseOrder());
+
+            int j;
+            for (Long aMarket_cap_change : market_cap_change) {
+                j = 0;
+                while (coins.get(j).getCap_change() != aMarket_cap_change) {
+                    j++;
+                }
+                System.out.println(coins.get(j).getName());
+                System.out.println(NumberFormat.getNumberInstance(Locale.GERMANY).format(coins.get(j).getCap_change()));
+            }
 
 
         } catch (IOException e) {
